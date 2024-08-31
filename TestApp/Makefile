@@ -14,10 +14,10 @@ CFLAGS := -g -O3 -MP -MMD
 CXXFLAGS := $(CFLAGS) -std=c++20 -xc++
 APPROOT := ./
 ENGINENAME := DrawEngine
-ENGINEROOT := ./$(ENGINENAME)/
-ENGINESRC := ./$(ENGINENAME)/DrawEngine/
+ENGINEROOT := ./../$(ENGINENAME)/
+ENGINESRC := $(ENGINEROOT)/DrawEngine/
 OBJDIR := ./obj/
-BINDIR := ./bin/
+BINDIR := ./../bin/
 SRCDIR := ./src/
 INCLUDE := -I/opt/homebrew/include/ -I/usr/include/ -I/usr/local/include/ 
 INCLUDE := $(INCLUDE) -I/opt/homebrew/Cellar/sfml/2.6.1/include/
