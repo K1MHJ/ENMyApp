@@ -1,5 +1,7 @@
 # Prerequisites
 *.d
+*.log
+bin/
 
 # Compiled Object files
 *.slo

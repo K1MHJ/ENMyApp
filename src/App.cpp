@@ -1,5 +1,4 @@
 #include "TopLayer.h"
-#include "SfmlPF.h"
 #include <Core/EntryPoint.h>
 
 class MyApp : public Application {
