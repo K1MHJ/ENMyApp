@@ -1,0 +1,3 @@
+[submodule "DrawEngine"]
+	path = DrawEngine
+	url = git@github.com:K1MHJ/DrawEngine.git
