@@ -1,14 +1,8 @@
+#include "MazeApp.h"
+#include "LogoLayer.h"
 #include "MazeLayer.h"
-#include <Core/EntryPoint.h>
+#include <functional>
 
-class MazeApp : public Application {
-public:
-  MazeApp(const ApplicationSpecification &specification)
-      : Application(specification) {
-    PushLayer(new MazeLayer());
-  }
-  ~MazeApp() {}
-};
 Application *CreateApplication(ApplicationCommandLineArgs args) {
   ApplicationSpecification spec;
   spec.Name = "Maze";
@@ -16,6 +10,11 @@ Application *CreateApplication(ApplicationCommandLineArgs args) {
   spec.CommandLineArgs = args;
   spec.Width = 600;
   spec.Height = 600;
-
   return new MazeApp(spec);
 }
+void MazeApp::InitApp() {
+  PushLayer(new LogoLayer());
+  std::function<void()> fn = &MainThread;
+  SubmitToMainThread(fn);
+}
+void MainThread() { CORE_INFO("InitApp"); }

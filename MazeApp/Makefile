@@ -2,7 +2,7 @@
 
 TARGET := MazeApp
 SRC := 
-SRC := $(SRC) ./App.cpp ./MazeLayer.cpp
+SRC := $(SRC) ./MazeApp.cpp ./MazeLayer.cpp ./LogoLayer.cpp
 
 
 CC := clang
