@@ -1,101 +1,23 @@
 #include "MazeLayer.h"
+#include "Cell.h"
+#include "FindPathLayer.h"
 #include "Renderer/Renderer2D.h"
 #include <SFML/Graphics.hpp>
 #include <queue>
 #include <random>
-#include <string>
 
 bool maze_done;
 int r0, c0;
-const static int ROW = 5;
-const static int COL = 5;
 std::mt19937 m_mt;
-float xoffset = 16;
-float yoffset = 16;
-enum {
-  RED,
-  BLUE,
-  BLACK,
-  WHITE,
-  GRAY,
-  PINK,
-};
-const std::vector<Color> Colors = {
-    Color{200, 0, 0, 255},     // RED
-    Color{153, 204, 255, 255}, // BLUE
-    Color{0, 0, 0, 255},       // BLACK
-    Color{255, 255, 255, 255}, // WHITE
-    Color{224, 224, 224, 255}, // GRAY
-    Color{255, 192, 203, 255}, // PINK
-};
-const int cellsize = 32;
+
 bool visited[ROW * COL];
 std::queue<std::pair<int, int>> history;
 bool fixed[ROW * COL];
 bool fixedCount = 0;
-enum { UP, DOWN, RIGHT, LEFT };
 
-uint64_t gtime = 0;
+static uint64_t gtime = 0;
 constexpr const int FPS = 50;
 constexpr const int SPF = 1000 / (double)FPS;
-
-class Cell {
-public:
-  Cell() {
-    for (int i = 0; i < 4; i++) {
-      wall[i] = true;
-      block[i] = false;
-    }
-    FillColor = Colors[GRAY];
-    WallColor = Colors[BLACK];
-  }
-  void Draw(float row, float col) {
-    float thick = 2;
-    Renderer2D::DrawFillRectangle(col * cellsize + xoffset,
-                                  row * cellsize + yoffset, cellsize, cellsize,
-                                  FillColor);
-    for (int i = 0; i < 4; i++) {
-      if (wall[i] == true) {
-        float x[2], y[2];
-        switch (i) {
-        case LEFT:
-          x[0] = col * cellsize + thick / 4 + 1;
-          y[0] = row * cellsize;
-          x[1] = x[0];
-          y[1] = y[0] + cellsize;
-          break;
-        case RIGHT:
-          x[0] = (col + 1) * cellsize - thick / 4 + 1;
-          y[0] = row * cellsize;
-          x[1] = x[0];
-          y[1] = y[0] + cellsize;
-          break;
-        case UP:
-          x[0] = col * cellsize;
-          y[0] = row * cellsize + 0;
-          x[1] = x[0] + cellsize;
-          y[1] = y[0];
-          break;
-        case DOWN:
-          x[0] = col * cellsize;
-          y[0] = (row + 1) * cellsize - 0;
-          x[1] = x[0] + cellsize;
-          y[1] = y[0];
-          break;
-        }
-        x[0] += xoffset;
-        x[1] += xoffset;
-        y[0] += yoffset;
-        y[1] += yoffset;
-        Renderer2D::DrawLine(x[0], y[0], x[1], y[1], thick / 2, WallColor);
-      }
-    }
-  }
-  Color FillColor;
-  Color WallColor;
-  bool wall[4];
-  bool block[4];
-};
 
 Cell cells[ROW][COL];
 std::vector<std::vector<int>> graph;
@@ -169,7 +91,7 @@ public:
         } else if (h.second == 1) {
           cells[r][c].FillColor = Colors[BLUE];
         };
-      }else{
+      } else {
         CORE_INFO("done");
         maze_done = true;
       }
@@ -190,6 +112,16 @@ void MazeLayer::OnUpdate(Timestep &ts) {
       Renderer2D::Clear(255, 255, 255);
       ground.Draw();
       Renderer2D::EndScene();
+    } else {
+      Application &app = Application::Get();
+      app.PopLayer(this);
+      FindPathLayer *newLayer = new FindPathLayer();
+      for (int i = 0; i < ROW; i++) {
+        for (int j = 0; j < COL; j++) {
+          newLayer->cells[i][j] = cells[i][j];
+        }
+      }
+      app.PushLayer(newLayer);
     }
   }
 }
