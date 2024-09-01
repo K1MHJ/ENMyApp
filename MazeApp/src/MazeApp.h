@@ -1,3 +1,4 @@
+#pragma once
 #include <Core/EntryPoint.h>
 
 void MainThread();
@@ -9,4 +10,5 @@ public:
   }
   ~MazeApp() {}
   void InitApp();
+  void MFunc();
 };

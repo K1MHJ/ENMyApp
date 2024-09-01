@@ -13,8 +13,9 @@ Application *CreateApplication(ApplicationCommandLineArgs args) {
   return new MazeApp(spec);
 }
 void MazeApp::InitApp() {
-  PushLayer(new LogoLayer());
-  std::function<void()> fn = &MainThread;
+  PushLayer(new MazeLayer());
+  std::function<void()> fn = [&]() { return MFunc(); };
   SubmitToMainThread(fn);
 }
+void MazeApp::MFunc() { CORE_INFO("InitApp"); }
 void MainThread() { CORE_INFO("InitApp"); }

@@ -1,13 +1,9 @@
 #include "MazeLayer.h"
 #include "Renderer/Renderer2D.h"
 #include <SFML/Graphics.hpp>
-#include <queue>
 #include <random>
 #include <string>
 
-const static int ROW = 5;
-const static int COL = 5;
-std::mt19937 m_mt;
 float xoffset = 16;
 float yoffset = 16;
 enum {
@@ -27,10 +23,6 @@ const std::vector<Color> Colors = {
     Color{255, 192, 203, 255}, // PINK
 };
 const int cellsize = 32;
-bool visited[ROW * COL];
-std::queue<std::pair<int, int>> history;
-bool fixed[ROW * COL];
-bool fixedCount = 0;
 enum { UP, DOWN, RIGHT, LEFT };
 class Cell {
 public:
@@ -39,11 +31,16 @@ public:
       side[i] = nullptr;
       block[i] = false;
     }
-    FillColor = Colors[GRAY];
-    WallColor = Colors[BLACK];
   }
   void Draw(float row, float col) {
+    Color FillColor;
+    Color WallColor = Colors[BLACK];
     float thick = 2;
+    if (!select) {
+      FillColor = Colors[GRAY];
+    } else {
+      FillColor = Colors[PINK];
+    }
     Renderer2D::DrawFillRectangle(col * cellsize + xoffset,
                                   row * cellsize + yoffset, cellsize, cellsize,
                                   FillColor);
@@ -84,21 +81,30 @@ public:
       }
     }
   }
-  Color FillColor;
-  Color WallColor;
   Cell *side[4];
   bool block[4];
+  bool select;
 };
-
-Cell cells[ROW][COL];
-std::vector<std::vector<int>> graph;
-void DFS(int col, int row);
 class Ground {
 public:
   bool reset = false;
+  const static int ROW = 5;
+  const static int COL = 5;
+  Cell cells[ROW][COL];
+  std::mt19937 m_mt;
+  bool visited[ROW][COL];
+  std::vector<std::vector<int>> graph;
+  int m_sel_row;
+  int m_sel_col;
   Ground() {}
   void Init() {
     reset = true;
+
+    for (int i = 0; i < ROW; i++) {
+      for (int j = 0; j < COL; j++) {
+        visited[i][j] = false;
+      }
+    }
     for (int i = 0; i < ROW; i++) {
       cells[i][0].block[LEFT] = true;
       cells[i][COL - 1].block[RIGHT] = true;
@@ -118,32 +124,45 @@ public:
   }
   void Update() {
     if (reset) {
-      graph.resize(ROW * COL);
       int r0 = m_mt() % ROW;
       int c0 = m_mt() % COL;
-      visited[r0 * COL + c0] = true;
-      history.push(std::make_pair(r0 * COL + c0, 0));
-      fixed[r0 * COL + c0] = false;
-      DFS(c0, r0);
+      m_sel_row = r0;
+      m_sel_col = c0;
+      visited[r0][c0] = true;
+      cells[r0][c0].select = true;
+      graph.resize(ROW * COL);
       reset = false;
     } else {
-      if (!history.empty()) {
-        std::pair<int, int> h = history.front();
-        history.pop();
-        int r = h.first / COL;
-        int c = h.first % COL;
-        if (h.second == 0) {
-          cells[r][c].FillColor = Colors[PINK];
-        } else if (h.second == 1) {
-          cells[r][c].FillColor = Colors[BLUE];
-        };
+      for (int i = 0; i < 4; i++) {
+        int r2, c2;
+        r2 = m_sel_row;
+        c2 = m_sel_col;
+        switch (i) {
+        case 0:
+          r2 -= 1;
+          break;
+        case 1:
+          r2 += 1;
+          break;
+        case 2:
+          c2 -= 1;
+          break;
+        case 3:
+          c2 += 1;
+          break;
+        }
+        if (0 <= r2 && r2 < ROW && 0 <= c2 && c2 < COL) {
+          if (!visited[r2][c2]) {
+            graph[m_sel_row * COL + m_sel_col].emplace_back(r2 * COL + c2);
+          }
+        }
       }
     }
   }
 };
 Ground ground;
 uint64_t gtime = 0;
-constexpr const int FPS = 10;
+constexpr const int FPS = 2;
 constexpr const int SPF = 1000 / (double)FPS;
 
 MazeLayer::MazeLayer() : Layer("MazeLayer") {}
@@ -191,56 +210,3 @@ void MazeLayer::OnAttach() {
 }
 
 void MazeLayer::OnDetach() { PROFILE_FUNCTION(); }
-
-void DFS(int col, int row) {
-  std::vector<int> openPath;
-  for (int i = 0; i < 4; i++) {
-    int r2, c2;
-    r2 = row;
-    c2 = col;
-    switch (i) {
-    case 0:
-      r2 -= 1;
-      break;
-    case 1:
-      r2 += 1;
-      break;
-    case 2:
-      c2 -= 1;
-      break;
-    case 3:
-      c2 += 1;
-      break;
-    }
-    if (0 <= r2 && r2 < ROW && 0 <= c2 && c2 < COL) {
-      int g = r2 * COL + c2;
-      if (!visited[g]) {
-        // graph[row * COL + col].emplace_back(g);
-        openPath.push_back(g);
-      }
-    }
-  }
-  if (openPath.size() > 0) {
-    int r, c;
-    int next = openPath[m_mt() % openPath.size()];
-    r = next / COL;
-    c = next % COL;
-    graph[row * COL + col].emplace_back(next);
-    visited[next] = true;
-    history.push(std::make_pair(next, 0));
-    DFS(c, r);
-  } else {
-    history.push(std::make_pair(row * COL + col, 1));
-    for (int i = 0; i < graph.size(); i++) {
-      for (auto &it : graph[i]) {
-        if (it == row * COL + col) {
-          int r, c;
-          r = i / COL;
-          c = i % COL;
-          DFS(c, r);
-          return;
-        }
-      }
-    }
-  }
-}

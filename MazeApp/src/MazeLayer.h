@@ -12,7 +12,7 @@ public:
   virtual void OnAttach() override;
   virtual void OnDetach() override;
 
-  void OnUpdate(Timestep& ts) override;
+  void OnUpdate(Timestep &ts) override;
   virtual void OnGuiRender() override;
   void OnEvent(Event &e) override;
 
