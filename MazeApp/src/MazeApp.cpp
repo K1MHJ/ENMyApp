@@ -18,4 +18,3 @@ void MazeApp::InitApp() {
   SubmitToMainThread(fn);
 }
 void MazeApp::MFunc() { CORE_INFO("InitApp"); }
-void MainThread() { CORE_INFO("InitApp"); }

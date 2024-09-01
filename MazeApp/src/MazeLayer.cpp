@@ -5,6 +5,8 @@
 #include <random>
 #include <string>
 
+bool maze_done;
+int r0, c0;
 const static int ROW = 5;
 const static int COL = 5;
 std::mt19937 m_mt;
@@ -109,6 +111,7 @@ public:
     m_last_col = -1;
   }
   void Init() {
+    maze_done = false;
     reset = true;
     for (int i = 0; i < ROW; i++) {
       cells[i][0].block[LEFT] = true;
@@ -130,8 +133,8 @@ public:
   void Update() {
     if (reset) {
       graph.resize(ROW * COL);
-      int r0 = m_mt() % ROW;
-      int c0 = m_mt() % COL;
+      r0 = m_mt() % ROW;
+      c0 = m_mt() % COL;
       visited[r0 * COL + c0] = true;
       history.push(std::make_pair(r0 * COL + c0, 0));
       fixed[r0 * COL + c0] = false;
@@ -166,6 +169,9 @@ public:
         } else if (h.second == 1) {
           cells[r][c].FillColor = Colors[BLUE];
         };
+      }else{
+        CORE_INFO("done");
+        maze_done = true;
       }
     }
   }
@@ -178,11 +184,13 @@ void MazeLayer::OnUpdate(Timestep &ts) {
   gtime += ts.GetMilliseconds();
   if (gtime >= SPF) {
     gtime = gtime % SPF;
-    ground.Update();
-    Renderer2D::BeginScene();
-    Renderer2D::Clear(255, 255, 255);
-    ground.Draw();
-    Renderer2D::EndScene();
+    if (!maze_done) {
+      ground.Update();
+      Renderer2D::BeginScene();
+      Renderer2D::Clear(255, 255, 255);
+      ground.Draw();
+      Renderer2D::EndScene();
+    }
   }
 }
 
