@@ -20,7 +20,7 @@ enum {
 };
 const std::vector<Color> Colors = {
     Color{200, 0, 0, 255},     // RED
-    Color{0, 0, 200, 255},     // BLUE
+    Color{153, 204, 255, 255}, // BLUE
     Color{0, 0, 0, 255},       // BLACK
     Color{255, 255, 255, 255}, // WHITE
     Color{224, 224, 224, 255}, // GRAY
@@ -32,11 +32,16 @@ std::queue<std::pair<int, int>> history;
 bool fixed[ROW * COL];
 bool fixedCount = 0;
 enum { UP, DOWN, RIGHT, LEFT };
+
+uint64_t gtime = 0;
+constexpr const int FPS = 50;
+constexpr const int SPF = 1000 / (double)FPS;
+
 class Cell {
 public:
   Cell() {
     for (int i = 0; i < 4; i++) {
-      side[i] = nullptr;
+      wall[i] = true;
       block[i] = false;
     }
     FillColor = Colors[GRAY];
@@ -48,30 +53,30 @@ public:
                                   row * cellsize + yoffset, cellsize, cellsize,
                                   FillColor);
     for (int i = 0; i < 4; i++) {
-      if (side[i] == nullptr) {
+      if (wall[i] == true) {
         float x[2], y[2];
         switch (i) {
         case LEFT:
           x[0] = col * cellsize + thick / 4 + 1;
-          y[0] = row * cellsize + 1;
+          y[0] = row * cellsize;
           x[1] = x[0];
-          y[1] = y[0] + cellsize - 1;
+          y[1] = y[0] + cellsize;
           break;
         case RIGHT:
           x[0] = (col + 1) * cellsize - thick / 4 + 1;
-          y[0] = row * cellsize + 1;
+          y[0] = row * cellsize;
           x[1] = x[0];
-          y[1] = y[0] + cellsize - 1;
+          y[1] = y[0] + cellsize;
           break;
         case UP:
           x[0] = col * cellsize;
-          y[0] = row * cellsize + thick / 4;
+          y[0] = row * cellsize + 0;
           x[1] = x[0] + cellsize;
           y[1] = y[0];
           break;
         case DOWN:
           x[0] = col * cellsize;
-          y[0] = (row + 1) * cellsize - thick / 4;
+          y[0] = (row + 1) * cellsize - 0;
           x[1] = x[0] + cellsize;
           y[1] = y[0];
           break;
@@ -86,7 +91,7 @@ public:
   }
   Color FillColor;
   Color WallColor;
-  Cell *side[4];
+  bool wall[4];
   bool block[4];
 };
 
@@ -94,9 +99,15 @@ Cell cells[ROW][COL];
 std::vector<std::vector<int>> graph;
 void DFS(int col, int row);
 class Ground {
+  int m_last_row;
+  int m_last_col;
+
 public:
   bool reset = false;
-  Ground() {}
+  Ground() {
+    m_last_row = -1;
+    m_last_col = -1;
+  }
   void Init() {
     reset = true;
     for (int i = 0; i < ROW; i++) {
@@ -132,6 +143,24 @@ public:
         history.pop();
         int r = h.first / COL;
         int c = h.first % COL;
+        if (m_last_col >= 0 && m_last_row >= 0) {
+          if (c > m_last_col) {
+            cells[r][m_last_col].wall[RIGHT] = false;
+            cells[r][c].wall[LEFT] = false;
+          } else if (c < m_last_col) {
+            cells[r][m_last_col].wall[LEFT] = false;
+            cells[r][c].wall[RIGHT] = false;
+          }
+          if (r > m_last_row) {
+            cells[m_last_row][c].wall[DOWN] = false;
+            cells[r][c].wall[UP] = false;
+          } else if (r < m_last_row) {
+            cells[m_last_row][c].wall[UP] = false;
+            cells[r][c].wall[DOWN] = false;
+          }
+        }
+        m_last_row = r;
+        m_last_col = c;
         if (h.second == 0) {
           cells[r][c].FillColor = Colors[PINK];
         } else if (h.second == 1) {
@@ -142,9 +171,6 @@ public:
   }
 };
 Ground ground;
-uint64_t gtime = 0;
-constexpr const int FPS = 10;
-constexpr const int SPF = 1000 / (double)FPS;
 
 MazeLayer::MazeLayer() : Layer("MazeLayer") {}
 void MazeLayer::OnUpdate(Timestep &ts) {
@@ -215,25 +241,24 @@ void DFS(int col, int row) {
     if (0 <= r2 && r2 < ROW && 0 <= c2 && c2 < COL) {
       int g = r2 * COL + c2;
       if (!visited[g]) {
-        // graph[row * COL + col].emplace_back(g);
         openPath.push_back(g);
       }
     }
   }
   if (openPath.size() > 0) {
+    history.push(std::make_pair(row * COL + col, 0));
     int r, c;
     int next = openPath[m_mt() % openPath.size()];
     r = next / COL;
     c = next % COL;
-    graph[row * COL + col].emplace_back(next);
+    graph[row * COL + col].push_back(next);
     visited[next] = true;
-    history.push(std::make_pair(next, 0));
     DFS(c, r);
   } else {
     history.push(std::make_pair(row * COL + col, 1));
     for (int i = 0; i < graph.size(); i++) {
       for (auto &it : graph[i]) {
-        if (it == row * COL + col) {
+        if (it == row * COL + col && visited[i]) {
           int r, c;
           r = i / COL;
           c = i % COL;
