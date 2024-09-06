@@ -7,8 +7,8 @@ Application *CreateApplication(ApplicationCommandLineArgs args) {
   spec.Name = "DotBridge";
   spec.WorkingDirectory = "";
   spec.CommandLineArgs = args;
-  spec.Width = 600;
-  spec.Height = 600;
+  spec.Width = 360;
+  spec.Height = 360;
   return new MainApp(spec);
 }
 void MainApp::InitApp() {
