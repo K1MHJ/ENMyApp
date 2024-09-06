@@ -1,21 +1,13 @@
 #include "AppLayer.h"
+#include "Game.h"
 #include "Renderer/Renderer2D.h"
 #include <SFML/Graphics.hpp>
-#include <random>
-
-std::mt19937 m_mt;
-
+#include <chrono>
+#include <thread>
 static uint64_t gtime = 0;
-constexpr const int FPS = 1000;
+constexpr const int FPS = 10;
 constexpr const int SPF = 1000 / (double)FPS;
 
-class Game {
-public:
-  Game() {}
-  void Init() { m_mt = std::mt19937(200); }
-  void Draw() {}
-  void Update() {}
-};
 Game game;
 
 AppLayer::AppLayer() : Layer("AppLayer") {}
@@ -29,6 +21,8 @@ void AppLayer::OnUpdate(Timestep &ts) {
     Renderer2D::Clear(255, 255, 255);
     game.Draw();
     Renderer2D::EndScene();
+  } else {
+    std::this_thread::sleep_for(std::chrono::milliseconds(SPF - gtime));
   }
 }
 

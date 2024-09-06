@@ -17,3 +17,4 @@ void MainApp::InitApp() {
   SubmitToMainThread(fn);
 }
 void MainApp::MFunc() { CORE_INFO("InitApp"); }
+

@@ -2,7 +2,7 @@
 
 TARGET := DotBridgeApp
 SRC := 
-SRC := $(SRC) ./App.cpp ./AppLayer.cpp
+SRC := $(SRC) ./App.cpp ./AppLayer.cpp ./Game.cpp
 
 /*==============================================================*/
 
