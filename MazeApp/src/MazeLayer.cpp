@@ -16,7 +16,7 @@ bool fixed[ROW * COL];
 bool fixedCount = 0;
 
 static uint64_t gtime = 0;
-constexpr const int FPS = 50;
+constexpr const int FPS = 200;
 constexpr const int SPF = 1000 / (double)FPS;
 
 Cell cells[ROW][COL];
@@ -43,7 +43,7 @@ public:
       cells[0][i].block[UP] = true;
       cells[ROW - 1][i].block[DOWN] = true;
     }
-    m_mt = std::mt19937(100);
+    m_mt = std::mt19937(200);
   }
   void Draw() {
     for (int r = 0; r < ROW; r++) {

@@ -3,9 +3,9 @@
 #include "Renderer/Renderer2D.h"
 #include <SFML/Graphics.hpp>
 
-const static int ROW = 5;
-const static int COL = 5;
-const int cellsize = 32;
+const static int ROW = 50;
+const static int COL = 50;
+const int cellsize = 8;
 
 static float xoffset = 16;
 static float yoffset = 16;
