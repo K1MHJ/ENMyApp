@@ -4,11 +4,11 @@
 
 Application *CreateApplication(ApplicationCommandLineArgs args) {
   ApplicationSpecification spec;
-  spec.Name = "DotBridge";
+  spec.Name = "Polygon";
   spec.WorkingDirectory = "";
   spec.CommandLineArgs = args;
-  spec.Width = 360;
-  spec.Height = 360;
+  spec.Width = 360 * 2;
+  spec.Height = 360 * 2;
   return new MainApp(spec);
 }
 void MainApp::InitApp() {

@@ -21,6 +21,8 @@ Sprite spr;
 Image img;
 pxl *pxlPtr;
 Uint8 map[ROW][COL];
+
+
 void InitMap() {
   for (int i = 0; i < ROW; i++) {
     for (int j = 0; j < COL; j++) {
@@ -51,6 +53,9 @@ void Game::Init() {
   tex.loadFromImage(img);
   spr.setTexture(tex);
   spr.setScale(SCALE, SCALE);
+  
+  
+
 }
 void Game::Draw() {
   SetMap(2, 2, 0);
