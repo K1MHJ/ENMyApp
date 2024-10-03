@@ -53,6 +53,7 @@ public:
     }
   }
   void Update() {
+    CORE_INFO("1111");
     if (reset) {
       graph.resize(ROW * COL);
       r0 = m_mt() % ROW;

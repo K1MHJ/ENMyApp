@@ -16,6 +16,7 @@ float minx, miny;
 float maxx, maxy;
 float wndx, wndy;
 float scale;
+unsigned int frame = 0;
 
 Game::Game() {}
 void Game::Init() {
@@ -66,5 +67,6 @@ void Game::Draw() {
                          1, {0, 0, 0, 255});
     p = p2;
   }
+  Renderer2D::DrawLine(frame * 10, 0, frame * 10, 100, 1, {255, 0, 0, 255});
 }
-void Game::Update() {}
+void Game::Update() { frame++; }
